@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 class Genre(models.Model):
@@ -60,18 +61,20 @@ class User(AbstractUser):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name="orders")
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return str(self.created_at)
+        return f"Order: {self.created_at})"
 
 
 class Ticket(models.Model):
     movie_session = models.ForeignKey(MovieSession, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
     row = models.IntegerField()
     seat = models.IntegerField()
 
@@ -86,7 +89,7 @@ class Ticket(models.Model):
         if not 1 <= self.row <= cinema_hall.rows:
             raise ValidationError({
                 "row": [
-                    f"row number must be in available range: "
+                    "row number must be in available range: "
                     f"(1, rows): (1, {cinema_hall.rows})"
                 ]
             })
@@ -104,4 +107,4 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.movie_session} (row: {self.row}, seat: {self.seat})"
+        return f"Ticket: {self.movie_session} (row: {self.row}, seat: {self.seat})"
