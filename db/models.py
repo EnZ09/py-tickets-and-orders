@@ -61,9 +61,10 @@ class User(AbstractUser):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE,
-                             related_name="orders")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders")
 
     class Meta:
         ordering = ["-created_at"]
@@ -73,15 +74,22 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    movie_session = models.ForeignKey(MovieSession, on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    movie_session = models.ForeignKey(
+        MovieSession,
+        on_delete=models.CASCADE,
+        related_name="tickets")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets")
     row = models.IntegerField()
     seat = models.IntegerField()
 
     class Meta:
-        constraints = [models.UniqueConstraint(
-            fields=["movie_session", "row", "seat"],
-            name="unique_ticket_place_for_movie_session")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["movie_session", "row", "seat"],
+                name="unique_ticket_place_for_movie_session")]
 
     def clean(self) -> None:
         cinema_hall = self.movie_session.cinema_hall
@@ -97,7 +105,7 @@ class Ticket(models.Model):
         if not 1 <= self.seat <= cinema_hall.seats_in_row:
             raise ValidationError({
                 "seat": [
-                    f"seat number must be in available range: "
+                    "seat number must be in available range: "
                     f"(1, seats_in_row): (1, {cinema_hall.seats_in_row})"
                 ]
             })
@@ -107,4 +115,5 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"<Ticket: {self.movie_session} (row: {self.row}, seat: {self.seat})>"
+        return (f"<Ticket: {self.movie_session}"
+                f" (row: {self.row}, seat: {self.seat})>")
