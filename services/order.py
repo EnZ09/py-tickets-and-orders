@@ -10,12 +10,11 @@ def create_order(tickets: list[dict],
                  username: str,
                  date: str = None,) -> Order:
     user = get_user_model().objects.get(username=username)
-    order_data = {"user": user}
+    order = Order.objects.create(user=user)
 
     if date:
-        order_data["created_at"] = date
-
-    order = Order.objects.create(**order_data)
+        Order.objects.filter(id=order.id).update(created_at=date)
+        order.refresh_from_db()
 
     for ticket in tickets:
         Ticket.objects.create(
